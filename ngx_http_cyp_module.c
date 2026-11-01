@@ -1,6 +1,9 @@
 #include <ngx_config.h>
 #include <ngx_core.h>
 #include <ngx_http.h>
+#include "html_head.h"
+#include "html_foot.h"
+#include "html_gpg.h"
 
 static ngx_int_t cyp_handler(ngx_http_request_t *r);
 static char *cyp_enable(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
@@ -52,15 +55,108 @@ static ngx_int_t cyp_send(ngx_http_request_t *r, const char *html)
 // the index page
 static ngx_int_t page_index(ngx_http_request_t *r)
 {
-    ngx_log_error(NGX_LOG_INFO, r->connection->log, 0, "CYP index: URI=%V, args=%V", &r->uri, &r->args);
-    return cyp_send(r,
-        "<!DOCTYPE html>\n"
-        "<html><head><meta charset='utf-8'><title>CYP (C your page)</title></head>\n"
-        "<body style='background:black;color:lime'>\n"
-        "<h1>Welcome to CYP</h1>\n"
-        "<p>Generated directly by an nginx module: ngx_http_cyp_module.c</p>\n"
-        "<img src='img/a-l-e-x-beer.png'>\n"
-        "</body></html>\n");
+    //ngx_log_error(NGX_LOG_INFO, r->connection->log, 0, "CYP index: URI=%V, args=%V", &r->uri, &r->args);
+
+
+    char buffer[4000] = {'\0'};
+
+    //ngx_log_error(NGX_LOG_INFO, r->connection->log, 0, "CYP strcmp: %V %s %d", &r->args, "tech", ngx_strncmp(r->args.data, "tech", 4));
+    
+    // tech
+    if (r->args.data && ngx_strncmp(r->args.data, "tech", 4) == 0)
+    {
+        ngx_log_error(NGX_LOG_INFO, r->connection->log, 0, "CYP page_index = tech");
+
+        char html_body_tech[] = "<nav class='box' aria-label='Main navigation'>\n"
+	          "<a href='?alex'>[ a-l-e-x ]</a><a href='?tech'>[ tech stack ]</a>\n"
+                  "<a href='?gpg'>[ GPG key ]</a><a href='?links'>[ Links ]</a><a href='html/rebtris.html'>[ Rebtris ]</a>\n"
+                  "</nav>\n"
+                  "<div class='grid'>\n"
+                  "<main class='box'>\n"
+                  "<section id='alex'><h2>+-- TECH / DEV --+</h2>\n"
+	          "C, C++, Golang, Python<br>\n"
+                  "Linux, Plan9<br>\n"
+                  "GCC, GDB, Valgrind, CMake<br>\n"
+                  "Nginx, Postgres+PostGIS<br>\n"
+                  "K3S, AWS, Azure<br>\n"
+                  "OpenAI, Claude, Github Copilot, Llama.cpp, OpenClaw<br>\n"
+                  "</section>\n </main>\n <aside>\n"
+      		  "<img class='portrait' src='img/a-l-e-x-brutus.png'>\n"
+                  "</aside>\n </div>\n";
+    
+        ngx_sprintf((u_char*)buffer, "%s%s%s\n", html_head, html_body_tech, html_foot);
+        return cyp_send(r, buffer);
+    }
+    
+    // gpg
+    if (r->args.data && ngx_strncmp(r->args.data, "gpg", 3) == 0) 
+    {
+      
+	ngx_log_error(NGX_LOG_INFO, r->connection->log, 0, "CYP page_index = gpg");
+    
+        char html_body_gpg[] = "<nav class='box' aria-label='Main navigation'>\n"
+	          "<a href='?alex'>[ a-l-e-x ]</a><a href='?tech'>[ tech stack ]</a>\n"
+                  "<a href='?gpg'>[ GPG key ]</a><a href='?links'>[ Links ]</a><a href='html/rebtris.html'>[ Rebtris ]</a>\n"
+                  "</nav>\n"
+                  "<div class='grid'>\n"
+                  "<main class='box'>\n"
+                  "<section id='alex'><h2>+-- GPG public key --+</h2>\n";
+
+	char html_body_gpg2[] = "</section>\n </main>\n <aside>\n"
+      		  "<img class='portrait' src='img/a-l-e-x-radio.png'>\n"
+                  "</aside>\n </div>\n";
+
+        ngx_sprintf((u_char*)buffer, "%s%s%s%s%s\n", html_head, html_body_gpg, html_gpg, html_body_gpg2, html_foot);
+        return cyp_send(r, buffer);
+    }
+
+    // links
+    if (r->args.data && ngx_strncmp(r->args.data, "links", 5) == 0) 
+    {
+      
+	ngx_log_error(NGX_LOG_INFO, r->connection->log, 0, "CYP page_index = links");
+    
+        char html_body_links[] = "<nav class='box' aria-label='Main navigation'>\n"
+	          "<a href='?alex'>[ a-l-e-x ]</a><a href='?tech'>[ tech stack ]</a>\n"
+                  "<a href='?gpg'>[ GPG key ]</a><a href='?links'>[ Links ]</a><a href='html/rebtris.html'>[ Rebtris ]</a>\n"
+                  "</nav>\n"
+                  "<div class='grid'>\n"
+                  "<main class='box'>\n"
+                  "<section id='alex'><h2>+-- LINKS --+</h2>\n"
+		  "<a href='https://www.root.cz'>root.cz</a><br>\n"
+	          "<a href='https://phrack.org'>phrack</a><br>\n"
+	          "<a href='https://9front.org'>9front (plan9)</a><br>\n"
+	          "<a href='https://www.chinamieville.net'>china mieville</a><br>\n"
+	          "<a href='https://www.hplovecraft.com'>H.P.L.</a><br>\n"
+                  "</section>\n </main>\n <aside>\n"
+      		  "<img class='portrait' src='img/a-l-e-x-beer.png'>\n"
+                  "</aside>\n </div>\n";
+
+        ngx_sprintf((u_char*)buffer, "%s%s%s\n", html_head, html_body_links, html_foot);
+        return cyp_send(r, buffer);
+    }
+
+   
+    // index, alex  
+    //ngx_log_error(NGX_LOG_INFO, r->connection->log, 0, "CYP page_index = alex, argslen=%d", ngx_strlen(r->args.data));
+
+    char html_body_alex[] = "<nav class='box' aria-label='Main navigation'>\n"
+	          "<a href='?alex'>[ a-l-e-x ]</a><a href='?tech'>[ tech stack ]</a>\n"
+                  "<a href='?gpg'>[ GPG key ]</a><a href='?links'>[ Links ]</a><a href='html/rebtris.html'>[ Rebtris ]</a>\n"
+                  "</nav>\n"
+                  "<div class='grid'>\n"
+                  "<main class='box'>\n"
+                  "<section id='alex'><h2>+-- A-L-E-X --+</h2>\n"
+	          "<p>Hello, I am Alex. <br>\n"
+	          "Running Nginx with my ngx_http_cyp_module generating the whole web.\n"
+		  "No HTML, CSS, Javascript files, no PHP, no NodeJS, no backend, only C module inside Nginx :-)</p>\n"
+                  "</section>\n </main>\n <aside>\n"
+      		  "<img class='portrait' src='img/a-l-e-x.png'>\n"
+                  "</aside>\n </div>\n";
+    
+    ngx_sprintf((u_char*)buffer, "%s%s%s\n", html_head, html_body_alex, html_foot);
+
+    return cyp_send(r, buffer);
 }
 
 typedef ngx_int_t (*cyp_handler_t)(ngx_http_request_t *);

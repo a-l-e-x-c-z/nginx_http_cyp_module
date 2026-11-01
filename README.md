@@ -11,12 +11,10 @@ a content handler for the server's implicit location.
 
 ## Build
 
-Obtain the **same nginx source version** as the nginx binary you will load
-this module into. Use compatible configure flags (check `nginx -V`).
-
 From the nginx source directory:
 
 ```sh
-./configure --add-dynamic-module=/absolute/path/to/nginx_http_cyp_module
-make modules
+./auto/configure --with-http_ssl_module --with-http_v2_module --with-http_realip_module --with-threads --with-compat --add-dynamic-module=/home/alex/develop/nginx_http_cyp_module/
+
+make
 ```
