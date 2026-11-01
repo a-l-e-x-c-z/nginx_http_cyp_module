@@ -5,6 +5,10 @@
 #include "html_foot.h"
 #include "html_gpg.h"
 
+// location lat, lon
+static double my_lat = 49.7775922;
+static double my_lon = 18.4483944;
+
 static ngx_int_t cyp_handler(ngx_http_request_t *r);
 static char *cyp_enable(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 
@@ -52,6 +56,24 @@ static ngx_int_t cyp_send(ngx_http_request_t *r, const char *html)
     return ngx_http_output_filter(r, &out);
 }
 
+// the locator page
+static ngx_int_t page_locator(ngx_http_request_t *r)
+{
+    // todo: implement lat/lon parsing from get arguments
+    
+
+    if (r->args.data && ngx_strncmp(r->args.data, "fasfsgdsfgdgdgsdgf", 10) == 0)
+    {
+       ngx_log_error(NGX_LOG_INFO, r->connection->log, 0, "CYP locator changed lat/lon 1: %2.6f  %2.6f", my_lat, my_lon);
+       my_lat = 50.0788378;
+       my_lon = 14.4167664;   
+       ngx_log_error(NGX_LOG_INFO, r->connection->log, 0, "CYP locator changed lat/lon 2: %2.6f  %2.6f", my_lat, my_lon);
+    } 
+	    
+    ngx_log_error(NGX_LOG_INFO, r->connection->log, 0, "CYP locator no change");
+    return cyp_send(r, "OK");
+}
+
 // the index page
 static ngx_int_t page_index(ngx_http_request_t *r)
 {
@@ -67,13 +89,7 @@ static ngx_int_t page_index(ngx_http_request_t *r)
     {
         ngx_log_error(NGX_LOG_INFO, r->connection->log, 0, "CYP page_index = tech");
 
-        char html_body_tech[] = "<nav class='box' aria-label='Main navigation'>\n"
-	          "<a href='?alex'>[ a-l-e-x ]</a><a href='?tech'>[ tech stack ]</a>\n"
-                  "<a href='?gpg'>[ GPG key ]</a><a href='?links'>[ Links ]</a><a href='html/rebtris.html'>[ Rebtris ]</a>\n"
-                  "</nav>\n"
-                  "<div class='grid'>\n"
-                  "<main class='box'>\n"
-                  "<section id='alex'><h2>+-- TECH / DEV --+</h2>\n"
+        char html_body_tech[] = "<section id='alex'><h2>+-- TECH / DEV --+</h2>\n"
 	          "C, C++, Golang, Python<br>\n"
                   "Linux, Plan9<br>\n"
                   "GCC, GDB, Valgrind, CMake<br>\n"
@@ -94,13 +110,7 @@ static ngx_int_t page_index(ngx_http_request_t *r)
       
 	ngx_log_error(NGX_LOG_INFO, r->connection->log, 0, "CYP page_index = gpg");
     
-        char html_body_gpg[] = "<nav class='box' aria-label='Main navigation'>\n"
-	          "<a href='?alex'>[ a-l-e-x ]</a><a href='?tech'>[ tech stack ]</a>\n"
-                  "<a href='?gpg'>[ GPG key ]</a><a href='?links'>[ Links ]</a><a href='html/rebtris.html'>[ Rebtris ]</a>\n"
-                  "</nav>\n"
-                  "<div class='grid'>\n"
-                  "<main class='box'>\n"
-                  "<section id='alex'><h2>+-- GPG public key --+</h2>\n";
+        char html_body_gpg[] = "<section id='alex'><h2>+-- GPG public key --+</h2>\n";
 
 	char html_body_gpg2[] = "</section>\n </main>\n <aside>\n"
       		  "<img class='portrait' src='img/a-l-e-x-radio.png'>\n"
@@ -115,14 +125,9 @@ static ngx_int_t page_index(ngx_http_request_t *r)
     {
       
 	ngx_log_error(NGX_LOG_INFO, r->connection->log, 0, "CYP page_index = links");
+	ngx_log_error(NGX_LOG_INFO, r->connection->log, 0, "CYP page_index = links, lat=%2.6f lon=%2.6f", my_lat, my_lon);
     
-        char html_body_links[] = "<nav class='box' aria-label='Main navigation'>\n"
-	          "<a href='?alex'>[ a-l-e-x ]</a><a href='?tech'>[ tech stack ]</a>\n"
-                  "<a href='?gpg'>[ GPG key ]</a><a href='?links'>[ Links ]</a><a href='html/rebtris.html'>[ Rebtris ]</a>\n"
-                  "</nav>\n"
-                  "<div class='grid'>\n"
-                  "<main class='box'>\n"
-                  "<section id='alex'><h2>+-- LINKS --+</h2>\n"
+        char html_body_links[] = "<section id='alex'><h2>+-- LINKS --+</h2>\n"
 		  "<a href='https://www.root.cz'>root.cz</a><br>\n"
 	          "<a href='https://phrack.org'>phrack</a><br>\n"
 	          "<a href='https://9front.org'>9front (plan9)</a><br>\n"
@@ -135,18 +140,27 @@ static ngx_int_t page_index(ngx_http_request_t *r)
         ngx_sprintf((u_char*)buffer, "%s%s%s\n", html_head, html_body_links, html_foot);
         return cyp_send(r, buffer);
     }
+    
+    // location
+    if (r->args.data && ngx_strncmp(r->args.data, "location", 8) == 0) 
+    {
+      
+	ngx_log_error(NGX_LOG_INFO, r->connection->log, 0, "CYP page_index = location, %2.6f %2.6f", my_lat, my_lon);
+    
+        char html_loc1[] = "<section id='alex'><h2>+-- MY LOCATION --+</h2>\n<img src='https://api.mapy.com/v1/static/map?lon=";
+        char html_loc2[] = "&lat=";
+	char html_loc3[] = "&zoom=16&width=600&height=400&mapset=outdoor&markers=color:red;size:normal;";
+	char html_loc4[] = "&apikey=QDwAJBncxaRx36m6IRC_I36ywiyNSTHsCr6TFr6Tqrw'>\n</section>\n </main>\n <aside>\n<img class='portrait' src='img/a-l-e-x-map.png'>\n</aside>\n </div>\n";
+
+        ngx_sprintf((u_char*)buffer, "%s%s%2.6f%s%2.6f%s%2.6f,%2.6f%s%s\n", html_head, html_loc1, my_lon, html_loc2, my_lat, html_loc3, my_lon, my_lat, html_loc4, html_foot);
+        return cyp_send(r, buffer);
+    }
 
    
     // index, alex  
     //ngx_log_error(NGX_LOG_INFO, r->connection->log, 0, "CYP page_index = alex, argslen=%d", ngx_strlen(r->args.data));
 
-    char html_body_alex[] = "<nav class='box' aria-label='Main navigation'>\n"
-	          "<a href='?alex'>[ a-l-e-x ]</a><a href='?tech'>[ tech stack ]</a>\n"
-                  "<a href='?gpg'>[ GPG key ]</a><a href='?links'>[ Links ]</a><a href='html/rebtris.html'>[ Rebtris ]</a>\n"
-                  "</nav>\n"
-                  "<div class='grid'>\n"
-                  "<main class='box'>\n"
-                  "<section id='alex'><h2>+-- A-L-E-X --+</h2>\n"
+    char html_body_alex[] = "<section id='alex'><h2>+-- A-L-E-X --+</h2>\n"
 	          "<p>Hello, I am Alex. <br>\n"
 	          "Running Nginx with my ngx_http_cyp_module generating the whole web.\n"
 		  "No HTML, CSS, Javascript files, no PHP, no NodeJS, no backend, only C module inside Nginx :-)</p>\n"
@@ -168,7 +182,8 @@ typedef struct {
 
 // router to index page, handler function
 static cyp_route_t routes[] = {
-    { NGX_HTTP_GET | NGX_HTTP_HEAD, ngx_string("/"), page_index }
+    { NGX_HTTP_GET | NGX_HTTP_HEAD, ngx_string("/"), page_index },
+    { NGX_HTTP_GET | NGX_HTTP_HEAD, ngx_string("/locator"), page_locator }
 };
 
 static ngx_int_t cyp_handler(ngx_http_request_t *r)
