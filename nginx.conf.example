@@ -1,0 +1,13 @@
+# Adjust the load_module path to your installed .so location.
+load_module modules/ngx_http_cyp_module.so;
+
+worker_processes 1;
+events { worker_connections 1024; }
+http {
+    server {
+        listen 8080;
+        server_name localhost;
+        cyp;
+        # No location / block required.
+    }
+}
