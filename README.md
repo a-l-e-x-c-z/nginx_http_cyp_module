@@ -1,7 +1,7 @@
-# CYP (C-YOUR-PAGE): C-generated HTTP pages inside nginx
+# CYP (C-YOUR-PAGE), C-generated pages inside Nginx
 
-A small dynamic nginx HTTP module to generate personal web page. No `location /` directive, no static HTML files,
-no FastCGI, nor template engine is needed. No PHP, no NodeJS, only Nginx. The `cyp;` server directive installs
+A small nginx module to generate personal web page. No `location /` directive, no static HTML files,
+no FastCGI, nor template engine is needed. No PHP, no NodeJS, no backend, only Nginx. The `cyp;` http/server directive installs
 a content handler for the server's implicit location.
 
 ## Files
