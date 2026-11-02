@@ -56,21 +56,46 @@ static ngx_int_t cyp_send(ngx_http_request_t *r, const char *html)
     return ngx_http_output_filter(r, &out);
 }
 
+// parse args to location lat, lon
+static double parse_coordinate(ngx_str_t *arg)
+{
+    ngx_int_t whole = ngx_atoi(arg->data, 2);
+    ngx_int_t frac  = ngx_atoi(arg->data + 3, 6);
+
+    return (double)whole + (double)frac / 1000000.0;
+}
+
+
+static int parse_lat_lon(ngx_http_request_t* r, double* lat, double *lon)
+{	
+  ngx_str_t arg;
+
+  if (ngx_http_arg(r, (u_char *)"lat", 3, &arg) != NGX_OK)
+    return NGX_HTTP_BAD_REQUEST;
+
+  *lat = parse_coordinate(&arg);
+
+  if (ngx_http_arg(r, (u_char *)"lon", 3, &arg) != NGX_OK)
+    return NGX_HTTP_BAD_REQUEST;
+
+  *lon = parse_coordinate(&arg);
+
+  ngx_log_error(NGX_LOG_INFO, r->connection->log, 0, "CYP parse lat=%.6f lon=%.6f", *lat, *lon);
+
+  return NGX_HTTP_OK;
+}
+
 // the locator page
 static ngx_int_t page_locator(ngx_http_request_t *r)
 {
-    // todo: implement lat/lon parsing from get arguments
-    
-
-    if (r->args.data && ngx_strncmp(r->args.data, "fasfsgdsfgdgdgsdgf", 10) == 0)
+    if (r->args.data)
     {
+       parse_lat_lon(r, &my_lat, &my_lon);
+
        ngx_log_error(NGX_LOG_INFO, r->connection->log, 0, "CYP locator changed lat/lon 1: %2.6f  %2.6f", my_lat, my_lon);
-       my_lat = 50.0788378;
-       my_lon = 14.4167664;   
-       ngx_log_error(NGX_LOG_INFO, r->connection->log, 0, "CYP locator changed lat/lon 2: %2.6f  %2.6f", my_lat, my_lon);
     } 
-	    
-    ngx_log_error(NGX_LOG_INFO, r->connection->log, 0, "CYP locator no change");
+
+    ngx_log_error(NGX_LOG_INFO, r->connection->log, 0, "CYP locator no parameter changed");
     return cyp_send(r, "OK");
 }
 
